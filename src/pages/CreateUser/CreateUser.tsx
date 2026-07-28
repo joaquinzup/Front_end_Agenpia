@@ -2,8 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import styles from './CreateUser.module.css'
 import Button from '@/components/ui/Button/Button'
-import { createUser } from '@/api/CreateUser'
-import RegisterRightSide from '@/components/blocks/RegisterRightSide/RegisterRightSide'
+import { createUser } from '@/api/createUser'
 
 function CreateUser() {
   const navigate = useNavigate()
@@ -30,7 +29,6 @@ function CreateUser() {
     try {
       await createUser(nombre, apellido, email, password)
       // Usuario creado → volvemos a la lista para verlo
-      navigate({ to: '/' })
     } catch (error: any) {
       setError(error.message)
     } finally {
@@ -96,17 +94,16 @@ function CreateUser() {
 
           <Button variant="primary" type="submit" disabled={loading}>
             {loading ? 'Creando...' : 'Crear Usuario'}
+            
           </Button>
-
+          
           <p className={styles.footer}>
             <Link to="/">Volver a la lista</Link>
           </p>
         </form>
       </section>
 
-      <section className={styles.right}>
-        <RegisterRightSide/>
-      </section>
+      <section className={styles.right}></section>
 
     </main>
   )

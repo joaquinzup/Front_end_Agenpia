@@ -15,31 +15,29 @@ function Home() {
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
   // Usuario seleccionado para ver o editar en el modal
   const [modalUser, setModalUser] = useState<User | null>(null)
   const [modalMode, setModalMode] = useState<'view' | 'edit' | null>(null)
 
-  useEffect(() => {
-    // Protección mínima de ruta: sin token no tiene sentido estar acá
-    if (!localStorage.getItem('token')) {
-      navigate({ to: '/login' })
-      return
-    }
-    // Pedimos los usuarios a la API al montar el componente
-    async function loadUsers() {
-      try {
-        const data = await getUsers()
-        setUsers(data)
-      } catch (error: any) {
-        setError(error.message)
-      } finally {
-        setLoading(false)
-      }
-    }
+async function loadUsers() {
+  try {
+    const data = await getUsers()
+    setUsers(data)
+  } catch (error: any) {
+    setError(error.message)
+  } finally {
+    setLoading(false)
+  }
+}
 
-    loadUsers()
-  }, [navigate])
+useEffect(() => {
+  if (!localStorage.getItem('token')) {
+    navigate({ to: '/login' })
+    return
+  }
+  loadUsers()
+}, [navigate])
 
   function handleLogout() {
     // Cerrar sesión = borrar el token y volver al login
@@ -63,10 +61,36 @@ function Home() {
     setModalUser(null)
   }
 
-  function handleUserUpdated(updated: User) {
-    setUsers((prev) => prev.map((u) => (u._id === updated._id ? updated : u)))
-    closeModal()
+  function handleUserUpdated() {
+  closeModal()
+  loadUsers()
+  setSuccessMessage('Usuario actualizado exitosamente')
+}
+
+// Convierte el texto libre de "género" en un ícono. Solo reconoce
+// masculino/femenino (y variantes); cualquier otro valor se muestra
+// como "Sin especificar" en vez del texto crudo.
+function IconoG({ genero }: { genero: string }) {
+  const normalizado = genero?.trim().toLowerCase()
+
+  if (['masculino', 'm', 'hombre'].includes(normalizado)) {
+    return (
+      <span title="Masculino" aria-label="Masculino" className={styles.IconoM}>
+        ♂
+      </span>
+    )
   }
+
+  if (['femenino', 'f', 'mujer'].includes(normalizado)) {
+    return (
+      <span title="Femenino" aria-label="Femenino" className={styles.IconoF}>
+        ♀
+      </span>
+    )
+  }
+
+  return <span className={styles.sinGenero}>Sin especificar</span>
+}
  
   return (
     <main className={styles.container}>
@@ -95,12 +119,16 @@ function Home() {
           <table className={styles.table}>
             <thead>
               <tr>
-                <th className={styles.th}>Usuario</th>
-                <th className={styles.th}>Email</th>
-                <th className={styles.th}>Género</th>
-                <th className={styles.th}>Localidad</th>
-                <th className={styles.th}>Rol</th>
-                <th className={styles.th}>Acciones</th>
+                <th className={`${styles.th} ${styles.centrarTodo}`}>
+                <div className={styles.centrarUsuario}>
+                <span></span>
+                <span>Usuario</span>
+                </div></th>
+                <th className={`${styles.th} ${styles.centrarTodo}`}>Email</th>
+                <th className={`${styles.th} ${styles.centrarTodo}`}>Género</th>
+                <th className={`${styles.th} ${styles.centrarTodo}`}>Localidad</th>
+                <th className={`${styles.th} ${styles.centrarTodo}`}>Rol</th>
+                <th className={`${styles.th} ${styles.centrarTodo}`}>Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -114,19 +142,19 @@ function Home() {
                         src={`https://ui-avatars.com/api/?name=${user.nombre}+${user.apellido}&background=random`}
                         alt={`${user.nombre} ${user.apellido}`}
                       />
-                      <span>{user.nombre} {user.apellido}</span>
+                      <span className={styles.NombreApellido}>{user.nombre} {user.apellido}</span>
                     </div>
                   </td>
-                  <td className={styles.td}>{user.email}</td>
-                  <td className={styles.td}>{user.genero}</td>
-                  <td className={styles.td}>{user.localidad}</td>
-                  <td className={styles.td}>
+                  <td className={`${styles.td} ${styles.centrarTodo}`}>{user.email}</td>
+                  <td className={`${styles.td} ${styles.centrarTodo}`}><IconoG genero={user.genero} /></td>
+                  <td className={`${styles.td} ${styles.centrarTodo}`}>{user.localidad}</td>
+                  <td className={`${styles.td} ${styles.centrarTodo}`}>
                     <span className={`${styles.badge} ${styles[`badge__${user.role.toLowerCase()}`] ?? ''}`}>
                       {user.role}
                     </span>
                   </td>
                   <td className={styles.td}>
-                    <div className={styles.actions}>
+                    <div className={`${styles.td} ${styles.centrarTodo}`}>
                       <button className={styles.actionBtn} onClick={() => openView(user)}>Ver</button>
                       {role !== 'USER' && role !== 'GUEST' && (
                       <button className={`${styles.actionBtn} ${styles.actionBtnEdit}`} onClick={() =>
@@ -151,7 +179,18 @@ function Home() {
           <UserEditForm user={modalUser} currentRol={role} onCancel={closeModal} onSaved={handleUserUpdated} />
         )}
       </Modal>
-
+        <Modal
+  isOpen={successMessage !== null}
+  onClose={() => setSuccessMessage(null)}
+  title="Éxito"
+>
+  <p className={styles.message}>{successMessage}</p>
+  <div className={styles.modalActions}>
+    <Button variant="primary" type="button" onClick={() => setSuccessMessage(null)}>
+      Aceptar
+    </Button>
+  </div>
+</Modal>
     </main>
   )
 }

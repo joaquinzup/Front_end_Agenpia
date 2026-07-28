@@ -92,10 +92,24 @@
                                   USER CELL
     ============================================================ */
   .userCell {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
+  display: grid;
+  grid-template-columns: 46px 1fr;
+  align-items: center;
+  gap: 12px;
+}
+
+.centrarUsuario{
+ display: grid;
+  grid-template-columns: 46px 1fr;
+  align-items: center;
+  gap: 12px;
+}
+.centrarUsuario span:last-child {
+  text-align: center;
+}
+.NombreApellido {
+  text-align: center;
+}
   
   .avatar {
     width: 46px;
@@ -126,12 +140,40 @@
     background-color: rgba(0, 200, 150, 0.12);
     color: #00c896;
   }
-  
-  .badge__user {
-    background-color: rgba(255, 255, 255, 0.06);
-    color: #888;
+
+  .badge__root {
+     background-color: rgba(89, 13, 13, 0.15);
+    color: #da4244;
   }
   
+  .badge__user {
+    background-color: rgba(125, 113, 5, 0.06);
+    color: #e6d648;
+  }
+
+  .badge__guest {
+     background-color: rgba(74, 76, 76, 0.15);
+    color: #b2b1b5;
+  }
+  .IconoM {
+  font-size: 20px;
+  font-weight: 700;
+  color: blue;
+}
+ .IconoF {
+  font-size: 20px;
+  font-weight: 700;
+  color: pink
+}
+.sinGenero {
+  color: #888;
+  font-size: 13px;
+  font-style: italic;
+}
+
+.centrarTodo {
+  text-align: center;
+}
   /* ============================================================
                                   ACTION BUTTONS
         ============================================================ */
