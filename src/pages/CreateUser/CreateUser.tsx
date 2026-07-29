@@ -28,7 +28,7 @@ function CreateUser() {
     setLoading(true)
     try {
       await createUser(nombre, apellido, email, password)
-      // Usuario creado → volvemos a la lista para verlo
+      navigate({ to: '/' })
     } catch (error: any) {
       setError(error.message)
     } finally {
@@ -37,74 +37,90 @@ function CreateUser() {
   }
 
   return (
-    <main className={styles.container}>
+    <main className={styles.page}>
+      <video
+  className={styles.bgVideo}
+  src="src/assets/Videos/videoreg.mp4"
+  autoPlay
+  loop
+  muted
+  playsInline
+/>
+    <div className={styles.bgOverlay} />
+      <div className={styles.card}>
+        <div className={styles.badge}>＋</div>
 
-      <section className={styles.left}>
+        <h1 className={styles.title}>Crear usuario</h1>
+        <p className={styles.subtitle}>Completá los datos para dar de alta una cuenta nueva</p>
+
         <form className={styles.form} onSubmit={handleSubmit}>
-          <h1 className={styles.title}>Crear Usuario</h1>
-          <p className={styles.subtitle}>Completá los datos del nuevo usuario</p>
+          <div className={styles.row}>
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor="name">Nombre</label>
+              <input
+                className={styles.input}
+                id="name"
+                type="text"
+                placeholder="Ej: Ana"
+                value={nombre}
+                onChange={(e) => setNombre(e.target.value)}
+                required
+              />
+            </div>
 
-          <label className={styles.label} htmlFor="name">Nombre</label>
-          <input
-            className={styles.input}
-            id="name"
-            type="text"
-            placeholder="Nombre"
-            value={nombre}
-            onChange={(e) => setNombre(e.target.value)}
-            required
-          />
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor="lastname">Apellido</label>
+              <input
+                className={styles.input}
+                id="lastname"
+                type="text"
+                placeholder="Ej: Gómez"
+                value={apellido}
+                onChange={(e) => setApellido(e.target.value)}
+                required
+              />
+            </div>
+          </div>
 
-          <label className={styles.label} htmlFor="lastname">Apellido</label>
-          <input
-            className={styles.input}
-            id="lastname"
-            type="text"
-            placeholder="Apellido"
-            value={apellido}
-            onChange={(e) => setApellido(e.target.value)}
-            required
-          />
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="email">Email</label>
+            <input
+              className={styles.input}
+              id="email"
+              type="email"
+              placeholder="usuario@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
 
-          <label className={styles.label} htmlFor="email">Email</label>
-          <input
-            className={styles.input}
-            id="email"
-            type="email"
-            placeholder="usuario@email.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-
-          <label className={styles.label} htmlFor="password">Contraseña</label>
-          <input
-            className={styles.input}
-            id="password"
-            type="password"
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            minLength={6}
-          />
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="password">Contraseña</label>
+            <input
+              className={styles.input}
+              id="password"
+              type="password"
+              placeholder="Mínimo 6 caracteres"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={6}
+            />
+          </div>
 
           {/* Mensaje de error que viene del backend */}
           {error && <p className={styles.error}>{error}</p>}
 
           <Button variant="primary" type="submit" disabled={loading}>
-            {loading ? 'Creando...' : 'Crear Usuario'}
-            
+            {loading ? 'Creando...' : 'Crear usuario'}
           </Button>
-          
+
           <p className={styles.footer}>
-            <Link to="/">Volver a la lista</Link>
+            <Link to="/">← Volver a la lista</Link>
           </p>
         </form>
-      </section>
-
-      <section className={styles.right}></section>
-
+      </div>
     </main>
   )
 }

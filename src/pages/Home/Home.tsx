@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo, } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import Button from '@/components/ui/Button/Button'
 import Modal from '@/components/blocks/Modal/Modal'
@@ -16,6 +16,10 @@ function Home() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const [ordenarLista, setordenarLista] = useState<'nombre' | 'email' | null>(null)
+  const [ordenarDire, setordenarDire] = useState<'asc' | 'desc'>('asc')
+  const [searchTerm, setSearchTerm] = useState('')
+  const [avatarPreview, setAvatarPreview] = useState<{ url: string; alt: string } | null>(null)
   // Usuario seleccionado para ver o editar en el modal
   const [modalUser, setModalUser] = useState<User | null>(null)
   const [modalMode, setModalMode] = useState<'view' | 'edit' | null>(null)
@@ -67,6 +71,60 @@ useEffect(() => {
   setSuccessMessage('Usuario actualizado exitosamente')
 }
 
+  function handleSort(field: 'nombre' | 'email') {
+  if (ordenarLista === field) {
+    setordenarDire(ordenarDire === 'asc' ? 'desc' : 'asc')
+  } else {
+    setordenarLista(field)
+    setordenarDire('asc')
+  }
+}
+
+const sortedUsers = useMemo(() => {
+  const termino = searchTerm.trim().toLowerCase()
+  const filtrados = termino
+    ? users.filter((u) => `${u.nombre} ${u.apellido}`.toLowerCase().includes(termino))
+    : users
+
+  if (!ordenarLista) return filtrados
+
+  const copia = [...filtrados]
+  copia.sort((a, b) => {
+    const valorA = ordenarLista === 'nombre' ? `${a.nombre} ${a.apellido}`.toLowerCase() : a.email.toLowerCase()
+    const valorB = ordenarLista === 'nombre' ? `${b.nombre} ${b.apellido}`.toLowerCase() : b.email.toLowerCase()
+    if (valorA < valorB) return ordenarDire === 'asc' ? -1 : 1
+    if (valorA > valorB) return ordenarDire === 'asc' ? 1 : -1
+    return 0
+  })
+  return copia
+}, [users, ordenarLista, ordenarDire, searchTerm])
+
+// Convierte un _id de Mongo en un número 0-99 estable (siempre el mismo para el mismo id)
+function hashANumero(texto: string, max: number) {
+  let hash = 0
+  for (let i = 0; i < texto.length; i++) {
+    hash = (hash * 31 + texto.charCodeAt(i)) % max
+  }
+  return Math.abs(hash)
+}
+
+// Devuelve la URL del avatar: foto de hombre/mujer real si el género está
+// especificado, o el avatar de iniciales (ui-avatars.com) si no.
+function getAvatarUrl(user: User) {
+  const normalizado = user.genero?.trim().toLowerCase()
+  const indice = hashANumero(user._id, 100) // randomuser.me tiene fotos del 0 al 99
+
+  if (['masculino', 'm', 'hombre'].includes(normalizado)) {
+    return `https://randomuser.me/api/portraits/men/${indice}.jpg`
+  }
+
+  if (['femenino', 'f', 'mujer'].includes(normalizado)) {
+    return `https://randomuser.me/api/portraits/women/${indice}.jpg`
+  }
+
+  return `https://ui-avatars.com/api/?name=${user.nombre}+${user.apellido}&background=random`
+}
+
 // Convierte el texto libre de "género" en un ícono. Solo reconoce
 // masculino/femenino (y variantes); cualquier otro valor se muestra
 // como "Sin especificar" en vez del texto crudo.
@@ -96,8 +154,20 @@ function IconoG({ genero }: { genero: string }) {
     <main className={styles.container}>
 
       <div className={styles.header}>
-        <h1 className={styles.title}>Usuarios</h1>
-        <div className={styles.headerActions}>
+      <div className={styles.titleBusqueda}>
+      <h1 className={styles.title}>Usuarios</h1>
+      <div className={styles.cajaB}>
+       <span className={styles.searchIcon}>🔍</span>
+          <input
+        className={styles.searchInput}
+        type="text"
+        placeholder="Buscar por nombre..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        />
+         </div>
+      </div>
+      <div className={styles.headerActions}>
           {role !== 'USER' && role !== 'GUEST' && (
           <Button variant="primary" onClick={() => navigate({ to: '/create-user' })}>+ Agregar</Button>
           )}
@@ -110,21 +180,34 @@ function IconoG({ genero }: { genero: string }) {
 
       {error && <p className={styles.error}>{error}</p>}
 
-      {!loading && !error && users.length === 0 && (
-        <p className={styles.message}>No hay usuarios para mostrar</p>
-      )}
+      {!loading && !error && sortedUsers.length === 0 && (
+  <p className={styles.message}>
+    {searchTerm ? 'No se encontraron usuarios con ese nombre' : 'No hay usuarios para mostrar'}
+  </p>
+)}
 
-      {!loading && !error && users.length > 0 && (
+{!loading && !error && sortedUsers.length > 0 && (
         <div className={styles.tableWrapper}>
           <table className={styles.table}>
             <thead>
               <tr>
                 <th className={`${styles.th} ${styles.centrarTodo}`}>
-                <div className={styles.centrarUsuario}>
+                <div className={`${styles.centrarUsuario} ${styles.filtroUsuario}`}
+                onClick={() => handleSort('nombre')}>
                 <span></span>
-                <span>Usuario</span>
-                </div></th>
-                <th className={`${styles.th} ${styles.centrarTodo}`}>Email</th>
+                <span>
+                Usuario
+                {ordenarLista === 'nombre' && 
+      <span className={styles.sortArrow}>{ordenarDire === 'asc' ? ' ↓' : ' ↑'}</span>}
+    </span>
+  </div>
+</th>
+                <th className={`${styles.th} ${styles.centrarTodo} ${styles.filtroUsuario}`}
+                onClick={() => handleSort('email')}>
+                Email   
+                {ordenarLista === 'email' && 
+                <span className={styles.sortArrow}>{ordenarDire === 'asc' ? ' ↓' : ' ↑'}</span>}
+                </th>
                 <th className={`${styles.th} ${styles.centrarTodo}`}>Género</th>
                 <th className={`${styles.th} ${styles.centrarTodo}`}>Localidad</th>
                 <th className={`${styles.th} ${styles.centrarTodo}`}>Rol</th>
@@ -132,22 +215,38 @@ function IconoG({ genero }: { genero: string }) {
               </tr>
             </thead>
             <tbody>
-              {users.map((user) => (
+              {sortedUsers.map((user) => (
                 <tr key={user._id} className={styles.tr}>
                   <td className={styles.td}>
                     <div className={styles.userCell}>
                       {/* La API no devuelve imagen: generamos un avatar con el nombre */}
                       <img
-                        className={styles.avatar}
-                        src={`https://ui-avatars.com/api/?name=${user.nombre}+${user.apellido}&background=random`}
-                        alt={`${user.nombre} ${user.apellido}`}
+                      className={styles.avatar}
+                      src={getAvatarUrl(user)}
+                      alt={`${user.nombre} ${user.apellido}`}
+                      onClick={() =>
+                      setAvatarPreview({
+                      url: getAvatarUrl(user),
+                      alt: `${user.nombre} ${user.apellido}`,
+                          })
+                        }
                       />
                       <span className={styles.NombreApellido}>{user.nombre} {user.apellido}</span>
                     </div>
                   </td>
                   <td className={`${styles.td} ${styles.centrarTodo}`}>{user.email}</td>
                   <td className={`${styles.td} ${styles.centrarTodo}`}><IconoG genero={user.genero} /></td>
-                  <td className={`${styles.td} ${styles.centrarTodo}`}>{user.localidad}</td>
+                 <td className={`${styles.td} ${styles.centrarTodo}`}>
+  
+    <a className={styles.localidadLink}
+    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${user.localidad}, ${user.provincia}, ${user.pais}`)}`}
+    target="_blank"
+    rel="noopener noreferrer"
+    title={`Ver "${user.localidad}" en Google Maps`}
+      >
+      🌎 {user.localidad}
+      </a>
+      </td>
                   <td className={`${styles.td} ${styles.centrarTodo}`}>
                     <span className={`${styles.badge} ${styles[`badge__${user.role.toLowerCase()}`] ?? ''}`}>
                       {user.role}
@@ -191,6 +290,16 @@ function IconoG({ genero }: { genero: string }) {
     </Button>
   </div>
 </Modal>
+{avatarPreview && (
+  <div className={styles.avatarOverlay} onClick={() => setAvatarPreview(null)}>
+    <img
+      className={styles.avatarPreviewImg}
+      src={avatarPreview.url}
+      alt={avatarPreview.alt}
+      onClick={(e) => e.stopPropagation()}
+    />
+  </div>
+)}
     </main>
   )
 }
@@ -202,10 +311,8 @@ function UserDetails({ user }: { user: User }) {
   const fields: [string, string][] = [
     ['Nombre', `${user.nombre} ${user.apellido}`],
     ['Email', user.email],
-    ['Rol', user.role],
-    ['Género', user.genero],
-    ['Edad', String(user.edad)],
-    ['Fecha de nacimiento', user.fechaNacimiento?.slice(0, 10)],
+    //['Género', user.genero],
+    //['Fecha de nacimiento', user.fechaNacimiento?.slice(0, 10)],
     ['Teléfono', user.telefono],
     ['Dirección', user.direccion],
     ['Localidad', user.localidad],
