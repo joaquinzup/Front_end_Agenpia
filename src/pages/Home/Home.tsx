@@ -6,6 +6,7 @@ import styles from './Home.module.css'
 import { getUsers } from '@/api/getUsers'
 import { updateUser } from '@/api/updateUsers'
 import type { User } from '@/api/Types'
+import { deleteUser } from '@/api/deleteUser'
 
 const ROLES = ['ROOT', 'ADMIN', 'USER', 'GUEST']
 
@@ -65,11 +66,25 @@ useEffect(() => {
     setModalUser(null)
   }
 
-  function handleUserUpdated() {
-  closeModal()
-  loadUsers()
-  setSuccessMessage('Usuario actualizado exitosamente')
-}
+  function handleUserUpdated(updated: User) {
+    setUsers((prev) => prev.map((u) => (u._id === updated._id ? updated : u)))
+    closeModal()
+    loadUsers()
+    setSuccessMessage('Usuario actualizado correctamente')
+  }
+
+  async function handleDelete(user: User) {
+    const confirmado = window.confirm(`¿Seguro que querés eliminar a ${user.nombre} ${user.apellido}? Esta acción no se puede deshacer.`)
+    if (!confirmado) return
+
+    try {
+      await deleteUser(user._id)
+      setUsers((prev) => prev.filter((u) => u._id !== user._id))
+      setSuccessMessage('Usuario eliminado correctamente')
+    } catch (err: any) {
+      setError(err.message)
+    }
+  }
 
   function handleSort(field: 'nombre' | 'email') {
   if (ordenarLista === field) {
@@ -259,6 +274,19 @@ function IconoG({ genero }: { genero: string }) {
                       <button className={`${styles.actionBtn} ${styles.actionBtnEdit}`} onClick={() =>
                          openEdit(user)}>Editar</button>
                         )}
+                      {(role === 'ROOT' || role === 'ADMIN') && (
+                        <button
+                          className={`${styles.actionBtn} ${styles.actionBtnDelete}`}
+                          onClick={() => handleDelete(user)}
+                          title="Eliminar usuario"
+                          aria-label="Eliminar usuario"
+                        >
+                          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
+                            <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6h16Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            <path d="M10 11v6M14 11v6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                          </svg>
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

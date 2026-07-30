@@ -1,11 +1,12 @@
 import styles from './LoginRightSide.module.css'
-
+import videoLogin from '@/assets/Videos/HR.mp4'
+import imgLogin from '@/assets/Img/logo hr-Photoroom.png'
 function LoginRightSide() {
     return (
         <section className={styles.right}>
         <div className={styles.video}>
-            <video src="src/assets/Videos/HR.mp4" autoPlay loop muted playsInline></video>
-            <img src="src/assets/img/logo hr-Photoroom.png" width= "100px" alt="Image"></img>
+            <video src={videoLogin} autoPlay loop muted playsInline></video>
+            <img src={imgLogin} width= "100px" alt="Image"></img>
             <h2>Una empresa de servicios, al servicio de tu empresa...</h2>
         </div>
     </section>

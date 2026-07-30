@@ -221,6 +221,19 @@
 .searchInput::placeholder {
   color: #777;
 }
+
+.actionBtnDelete {
+  color: #ff6b6b;
+  border-color: #ff6b6b;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.actionBtnDelete:hover {
+  background-color: #ff6b6b;
+  color: #fff;
+}
   
   /* ============================================================
                                   BADGE
