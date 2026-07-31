@@ -196,3 +196,5 @@ Todas las funciones siguen el mismo patrón: hacen `fetch` contra `API_URL`, par
 - `components/blocks/RegisterRightSide` está preparado para una futura página de registro público, pero no hay ninguna ruta `/register` definida en `router.tsx`.
 - `config/globals.ts` tiene hardcodeado `http://localhost:7575` como `API_URL`; conviene revisar que coincida con el `PORT` real del backend antes de levantar el proyecto (o migrarlo a una variable de entorno de Vite).
 - Los videos de fondo (`src/assets/Videos/...`) se referencian con rutas relativas tipo `src="src/assets/Videos/HR.mp4"` en vez de usar `import`; funciona en desarrollo con Vite sirviendo el `src/` directamente, pero puede no resolver igual en un build de producción — vale la pena revisarlo antes de deployar.
+
+## Autor: Zupel Joaquin
