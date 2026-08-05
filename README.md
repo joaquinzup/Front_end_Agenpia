@@ -191,10 +191,6 @@ Esta es la pantalla principal y la que concentra la mayoría de los cambios reci
 | Botón "Cerrar sesión" | ✅ | ✅ | ✅ | ✅ |
 | Usuarios que ve la tabla | Todos | Todos menos ROOT | Solo `USER` y `GUEST` | Solo a sí mismo |
 
-> ¹ Detectado en el código: la condición para mostrar el `<select>` de rol es `currentRol === 'ROOT' && 'ADMIN'`. Como `'ADMIN'` es un string (siempre "truthy"), esa condición en la práctica se comporta igual que `currentRol === 'ROOT'` sola — el `&& 'ADMIN'` no tiene ningún efecto. Si la intención era habilitar el select también para `ADMIN`, faltaría cambiarlo por `currentRol === 'ROOT' || currentRol === 'ADMIN'`.
-
-> Estas reglas de visibilidad las devuelve directamente el backend (`getUsersService`); el frontend solo oculta/muestra botones según el rol guardado en `localStorage`, pero quien controla qué usuarios llegan en la respuesta es la API.
-
 ### Avatares
 
 `getAvatarUrl(user)` genera la imagen de cada usuario:
