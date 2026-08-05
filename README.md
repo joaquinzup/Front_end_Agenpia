@@ -185,7 +185,7 @@ Esta es la pantalla principal y la que concentra la mayoría de los cambios reci
 |---|---|---|---|---|
 | Botón "+ Agregar" (ir a crear usuario) | ✅ | ✅ | ❌ | ❌ |
 | Botón "Editar" por usuario | ✅ | ✅ | ❌ | ❌ |
-| Cambiar el `rol` al editar (select de roles) | ✅ | ❌ (oculto)¹ | — | — |
+| Cambiar el `rol` al editar (select de roles) | ✅ | ❌ | — | — |
 | Botón "Eliminar" (ícono de tacho SVG) | ✅ | ✅ | ❌ | ❌ |
 | Botón "Ver" (detalle solo lectura) | ✅ | ✅ | ✅ | ✅ |
 | Botón "Cerrar sesión" | ✅ | ✅ | ✅ | ✅ |
