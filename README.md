@@ -51,64 +51,109 @@ reactjs-main/
 ├── index.html
 ├── vite.config.ts
 ├── tsconfig.json
+├── package.json
+├── email.ts                    # Suelto en la raíz, sin usar (ver nota más abajo)
 └── src/
-    ├── main.tsx                # Punto de entrada: monta <App /> en el DOM
-    ├── App.tsx                 # Componente raíz: contiene el RouterProvider
-    ├── router.tsx              # Definición de rutas: /, /login, /create-user
+    ├── main.tsx                 # Punto de entrada: monta <App /> en el DOM
+    ├── App.tsx                  # Componente raíz: contiene el RouterProvider
+    ├── router.tsx                # Definición de rutas: /, /login, /create-user
     │
-    ├── api/                    # Funciones fetch hacia el backend
-    │   ├── Types.ts              # Interfaz User
-    │   ├── login.ts               # POST /auth/login (ruta pública)
-    │   ├── authFetch.ts            # fetch autenticado compartido por las rutas protegidas
-    │   ├── getUsers.ts             # GET /users
-    │   ├── createUser.ts            # POST /users
-    │   ├── updateUsers.ts             # PUT /users/:id
-    │   └── deleteUser.ts               # DELETE /users/:id
+    ├── types/
+    │   └── vite-env.d.ts          # Tipos de entorno de Vite
+    │
+    ├── api/
+    │   ├── Types.ts                # Interfaz User
+    │   ├── login.ts                 # POST /auth/login (ruta pública)
+    │   ├── authFetch.ts              # fetch autenticado compartido por las rutas protegidas
+    │   ├── getUsers.ts                # GET /users
+    │   ├── createUser.ts               # POST /users
+    │   ├── updateUsers.ts               # PUT /users/:id
+    │   └── deleteUser.ts                 # DELETE /users/:id
     │
     ├── config/
-    │   └── globals.ts          # API_URL
+    │   └── globals.ts               # API_URL
     │
-    ├── store/                  # (reservado para estado global futuro)
+    ├── store/                       # (reservado para estado global futuro, vacío)
     │
     ├── styles/
-    │   ├── variables.css        # Variables CSS globales
-    │   └── global.css            # Reset y estilos base
+    │   ├── variables.css              # Variables CSS globales
+    │   └── global.css                  # Reset y estilos base
     │
     ├── components/
     │   ├── ui/
-    │   │   └── Button/            # Botón reutilizable (variant primary/secondary)
+    │   │   └── Button/
+    │   │       ├── Button.tsx              # Botón reutilizable (variant primary/secondary)
+    │   │       └── Button.module.css
     │   └── blocks/
-    │       ├── Modal/               # Modal genérico (overlay + cierre con Escape, soporta tamaño md/lg)
-    │       ├── Navigation/            # Nav simple con links (no está montado en el router)
-    │       ├── LoginRightSide/         # Panel derecho decorativo del login (video + logo)
-    │       └── RegisterRightSide/       # Panel derecho decorativo, reservado para un registro futuro
+    │       ├── Modal/
+    │       │   ├── Modal.tsx                 # Modal genérico (overlay + cierre con Escape, soporta tamaño md/lg)
+    │       │   └── Modal.module.css
+    │       ├── Navigation/
+    │       │   ├── Navigation.tsx             # Nav simple con links (no está montado en el router)
+    │       │   └── Navigation.module.css
+    │       ├── LoginRightSide/
+    │       │   ├── LoginRightSide.tsx          # Panel derecho decorativo del login (video + logo)
+    │       │   └── LoginRightSide.module.css
+    │       └── RegisterRightSide/
+    │           ├── RegisterRightSide.tsx        # Panel decorativo, reservado para un registro futuro
+    │           └── RegisterRightSide.module.css
     │
     ├── assets/
-    │   ├── Img/                # Imágenes (logo, etc.)
-    │   └── Videos/               # Videos de fondo (login, alta de usuario)
+    │   ├── Img/
+    │   │   └── logo hr-Photoroom.png
+    │   └── Videos/
+    │       ├── HR.mp4                 # Fondo del login
+    │       └── videoreg.mp4            # Fondo del alta de usuario
     │
     └── pages/
-        ├── Home/                          # Listado de usuarios (pantalla principal)
-        │   ├── Home.tsx                     # Orquestador: estado, carga de datos, handlers
-        │   ├── utils/avatar.ts               # getAvatarUrl / hashANumero
+        ├── Home/
+        │   ├── Home.tsx                       # Orquestador: estado, carga de datos, handlers
+        │   ├── Home.module.css
+        │   ├── utils/
+        │   │   └── avatar.ts                    # getAvatarUrl / hashANumero
         │   └── components/
-        │       ├── HomeHeader/                # Título, buscador, botón "+ Agregar" y "Cerrar sesión"
-        │       ├── UsersTable/                  # Tabla + encabezados con orden por columna
-        │       ├── UserTableRow/                  # Fila: avatar, género, localidad, badge de rol, acciones
-        │       ├── GenderIcon/                      # Ícono ♂ / ♀ / "Sin especificar"
-        │       ├── AvatarPreview/                     # Overlay con la foto ampliada
-        │       ├── LocationView/                        # Mapa embebido + link "Abrir en Google Maps"
-        │       ├── UserDetails/                           # Vista solo lectura ("Ver")
-        │       ├── UserEditForm/                            # Formulario de edición
-        │       └── SuccessMessage/                            # Confirmación tras editar/eliminar
+        │       ├── HomeHeader/
+        │       │   ├── HomeHeader.tsx             # Título, buscador, "+ Agregar" y "Cerrar sesión"
+        │       │   └── HomeHeader.module.css
+        │       ├── UsersTable/
+        │       │   ├── UsersTable.tsx              # Tabla + encabezados con orden por columna
+        │       │   └── UsersTable.module.css
+        │       ├── UserTableRow/
+        │       │   ├── UserTableRow.tsx             # Fila: avatar, género, localidad, badge de rol, acciones
+        │       │   └── UserTableRow.module.css
+        │       ├── GenderIcon/
+        │       │   ├── GenderIcon.tsx               # Ícono ♂ / ♀ / "Sin especificar"
+        │       │   └── GenderIcon.module.css
+        │       ├── AvatarPreview/
+        │       │   ├── AvatarPreview.tsx            # Overlay con la foto ampliada
+        │       │   └── AvatarPreview.module.css
+        │       ├── LocationView/
+        │       │   ├── LocationView.tsx             # Mapa embebido + link "Abrir en Google Maps"
+        │       │   └── LocationView.module.css
+        │       ├── UserDetails/
+        │       │   ├── UserDetails.tsx               # Vista solo lectura ("Ver")
+        │       │   └── UserDetails.module.css
+        │       ├── UserEditForm/
+        │       │   ├── UserEditForm.tsx              # Formulario de edición
+        │       │   └── UserEditForm.module.css
+        │       └── SuccessMessage/
+        │           ├── SuccessMessage.tsx            # Confirmación tras editar/eliminar
+        │           └── SuccessMessage.module.css
         │
-        ├── Login/               # Formulario de login
+        ├── Login/
+        │   ├── Login.tsx                # Formulario de login
+        │   └── Login.module.css
         │
-        └── CreateUser/                # Alta de usuario
-            ├── CreateUser.tsx           # Layout con video de fondo
+        └── CreateUser/
+            ├── CreateUser.tsx             # Layout con video de fondo
+            ├── CreateUser.module.css
             └── components/
-                └── CreateUserForm/         # Formulario de alta en sí
+                └── CreateUserForm/
+                    ├── CreateUserForm.tsx     # Formulario de alta en sí
+                    └── CreateUserForm.module.css
 ```
+
+> Nota: hay un archivo `email.ts` suelto en la raíz del repo (fuera de `src/`) con un boceto de envío de email de bienvenida vía Resend. No está importado desde ningún lado de la app ni la dependencia `resend` está en `package.json` — parece un experimento que quedó sin conectar, no una funcionalidad activa.
 
 ### Rutas disponibles
 
