@@ -1,0 +1,32 @@
+.viewGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px 24px;
+  margin: 0;
+}
+
+.viewRow {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.viewLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.viewValue {
+  font-size: 14px;
+  color: #eee;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .viewGrid {
+    grid-template-columns: 1fr;
+  }
+}

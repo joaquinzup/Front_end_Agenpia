@@ -1,18 +1,21 @@
-import { useEffect, useState, useMemo, } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import Button from '@/components/ui/Button/Button'
 import Modal from '@/components/blocks/Modal/Modal'
-import styles from './Home.module.css'
 import { getUsers } from '@/api/getUsers'
-import { updateUser } from '@/api/updateUsers'
-import type { User } from '@/api/Types'
 import { deleteUser } from '@/api/deleteUser'
-
-const ROLES = ['ROOT', 'ADMIN', 'USER', 'GUEST']
+import type { User } from '@/api/Types'
+import HomeHeader from './components/HomeHeader/HomeHeader'
+import UsersTable from './components/UsersTable/UsersTable'
+import UserDetails from './components/UserDetails/UserDetails'
+import UserEditForm from './components/UserEditForm/UserEditForm'
+import LocationView from './components/LocationView/LocationView'
+import SuccessMessage from './components/SuccessMessage/SuccessMessage'
+import AvatarPreview from './components/AvatarPreview/AvatarPreview'
+import styles from './Home.module.css'
 
 function Home() {
   const navigate = useNavigate()
- const role = localStorage.getItem('role')
+  const role = localStorage.getItem('role')
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -24,25 +27,27 @@ function Home() {
   // Usuario seleccionado para ver o editar en el modal
   const [modalUser, setModalUser] = useState<User | null>(null)
   const [modalMode, setModalMode] = useState<'view' | 'edit' | null>(null)
+  // Usuario cuya localidad se está mostrando en el modal de mapa
+  const [locationUser, setLocationUser] = useState<User | null>(null)
 
-async function loadUsers() {
-  try {
-    const data = await getUsers()
-    setUsers(data)
-  } catch (error: any) {
-    setError(error.message)
-  } finally {
-    setLoading(false)
+  async function loadUsers() {
+    try {
+      const data = await getUsers()
+      setUsers(data)
+    } catch (error: any) {
+      setError(error.message)
+    } finally {
+      setLoading(false)
+    }
   }
-}
 
-useEffect(() => {
-  if (!localStorage.getItem('token')) {
-    navigate({ to: '/login' })
-    return
-  }
-  loadUsers()
-}, [navigate])
+  useEffect(() => {
+    if (!localStorage.getItem('token')) {
+      navigate({ to: '/login' })
+      return
+    }
+    loadUsers()
+  }, [navigate])
 
   function handleLogout() {
     // Cerrar sesión = borrar el token y volver al login
@@ -87,108 +92,42 @@ useEffect(() => {
   }
 
   function handleSort(field: 'nombre' | 'email') {
-  if (ordenarLista === field) {
-    setordenarDire(ordenarDire === 'asc' ? 'desc' : 'asc')
-  } else {
-    setordenarLista(field)
-    setordenarDire('asc')
-  }
-}
-
-const sortedUsers = useMemo(() => {
-  const termino = searchTerm.trim().toLowerCase()
-  const filtrados = termino
-    ? users.filter((u) => `${u.nombre} ${u.apellido}`.toLowerCase().includes(termino))
-    : users
-
-  if (!ordenarLista) return filtrados
-
-  const copia = [...filtrados]
-  copia.sort((a, b) => {
-    const valorA = ordenarLista === 'nombre' ? `${a.nombre} ${a.apellido}`.toLowerCase() : a.email.toLowerCase()
-    const valorB = ordenarLista === 'nombre' ? `${b.nombre} ${b.apellido}`.toLowerCase() : b.email.toLowerCase()
-    if (valorA < valorB) return ordenarDire === 'asc' ? -1 : 1
-    if (valorA > valorB) return ordenarDire === 'asc' ? 1 : -1
-    return 0
-  })
-  return copia
-}, [users, ordenarLista, ordenarDire, searchTerm])
-
-// Convierte un _id de Mongo en un número 0-99 estable (siempre el mismo para el mismo id)
-function hashANumero(texto: string, max: number) {
-  let hash = 0
-  for (let i = 0; i < texto.length; i++) {
-    hash = (hash * 31 + texto.charCodeAt(i)) % max
-  }
-  return Math.abs(hash)
-}
-
-// Devuelve la URL del avatar: foto de hombre/mujer real si el género está
-// especificado, o el avatar de iniciales (ui-avatars.com) si no.
-function getAvatarUrl(user: User) {
-  const normalizado = user.genero?.trim().toLowerCase()
-  const indice = hashANumero(user._id, 100) // randomuser.me tiene fotos del 0 al 99
-
-  if (['masculino', 'm', 'hombre'].includes(normalizado)) {
-    return `https://randomuser.me/api/portraits/men/${indice}.jpg`
+    if (ordenarLista === field) {
+      setordenarDire(ordenarDire === 'asc' ? 'desc' : 'asc')
+    } else {
+      setordenarLista(field)
+      setordenarDire('asc')
+    }
   }
 
-  if (['femenino', 'f', 'mujer'].includes(normalizado)) {
-    return `https://randomuser.me/api/portraits/women/${indice}.jpg`
-  }
+  const sortedUsers = useMemo(() => {
+    const termino = searchTerm.trim().toLowerCase()
+    const filtrados = termino
+      ? users.filter((u) => `${u.nombre} ${u.apellido}`.toLowerCase().includes(termino))
+      : users
 
-  return `https://ui-avatars.com/api/?name=${user.nombre}+${user.apellido}&background=random`
-}
+    if (!ordenarLista) return filtrados
 
-// Convierte el texto libre de "género" en un ícono. Solo reconoce
-// masculino/femenino (y variantes); cualquier otro valor se muestra
-// como "Sin especificar" en vez del texto crudo.
-function IconoG({ genero }: { genero: string }) {
-  const normalizado = genero?.trim().toLowerCase()
+    const copia = [...filtrados]
+    copia.sort((a, b) => {
+      const valorA = ordenarLista === 'nombre' ? `${a.nombre} ${a.apellido}`.toLowerCase() : a.email.toLowerCase()
+      const valorB = ordenarLista === 'nombre' ? `${b.nombre} ${b.apellido}`.toLowerCase() : b.email.toLowerCase()
+      if (valorA < valorB) return ordenarDire === 'asc' ? -1 : 1
+      if (valorA > valorB) return ordenarDire === 'asc' ? 1 : -1
+      return 0
+    })
+    return copia
+  }, [users, ordenarLista, ordenarDire, searchTerm])
 
-  if (['masculino', 'm', 'hombre'].includes(normalizado)) {
-    return (
-      <span title="Masculino" aria-label="Masculino" className={styles.IconoM}>
-        ♂
-      </span>
-    )
-  }
-
-  if (['femenino', 'f', 'mujer'].includes(normalizado)) {
-    return (
-      <span title="Femenino" aria-label="Femenino" className={styles.IconoF}>
-        ♀
-      </span>
-    )
-  }
-
-  return <span className={styles.sinGenero}>Sin especificar</span>
-}
- 
   return (
     <main className={styles.container}>
-
-      <div className={styles.header}>
-      <div className={styles.titleBusqueda}>
-      <h1 className={styles.title}>Usuarios</h1>
-      <div className={styles.cajaB}>
-       <span className={styles.searchIcon}>🔍</span>
-          <input
-        className={styles.searchInput}
-        type="text"
-        placeholder="Buscar por nombre..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        />
-         </div>
-      </div>
-      <div className={styles.headerActions}>
-          {role !== 'USER' && role !== 'GUEST' && (
-          <Button variant="primary" onClick={() => navigate({ to: '/create-user' })}>+ Agregar</Button>
-          )}
-          <Button variant="secondary" onClick={handleLogout}>Cerrar sesión</Button>
-        </div>
-      </div>
+      <HomeHeader
+        role={role}
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        onAdd={() => navigate({ to: '/create-user' })}
+        onLogout={handleLogout}
+      />
 
       {/* Estados de la petición: cargando → error → vacío → tabla */}
       {loading && <p className={styles.message}>Cargando usuarios...</p>}
@@ -196,104 +135,24 @@ function IconoG({ genero }: { genero: string }) {
       {error && <p className={styles.error}>{error}</p>}
 
       {!loading && !error && sortedUsers.length === 0 && (
-  <p className={styles.message}>
-    {searchTerm ? 'No se encontraron usuarios con ese nombre' : 'No hay usuarios para mostrar'}
-  </p>
-)}
+        <p className={styles.message}>
+          {searchTerm ? 'No se encontraron usuarios con ese nombre' : 'No hay usuarios para mostrar'}
+        </p>
+      )}
 
-{!loading && !error && sortedUsers.length > 0 && (
-        <div className={styles.tableWrapper}>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th className={`${styles.th} ${styles.centrarTodo}`}>
-                <div className={`${styles.centrarUsuario} ${styles.filtroUsuario}`}
-                onClick={() => handleSort('nombre')}>
-                <span></span>
-                <span>
-                Usuario
-                {ordenarLista === 'nombre' && 
-      <span className={styles.sortArrow}>{ordenarDire === 'asc' ? ' ↓' : ' ↑'}</span>}
-    </span>
-  </div>
-</th>
-                <th className={`${styles.th} ${styles.centrarTodo} ${styles.filtroUsuario}`}
-                onClick={() => handleSort('email')}>
-                Email   
-                {ordenarLista === 'email' && 
-                <span className={styles.sortArrow}>{ordenarDire === 'asc' ? ' ↓' : ' ↑'}</span>}
-                </th>
-                <th className={`${styles.th} ${styles.centrarTodo}`}>Género</th>
-                <th className={`${styles.th} ${styles.centrarTodo}`}>Localidad</th>
-                <th className={`${styles.th} ${styles.centrarTodo}`}>Rol</th>
-                <th className={`${styles.th} ${styles.centrarTodo}`}>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sortedUsers.map((user) => (
-                <tr key={user._id} className={styles.tr}>
-                  <td className={styles.td}>
-                    <div className={styles.userCell}>
-                      {/* La API no devuelve imagen: generamos un avatar con el nombre */}
-                      <img
-                      className={styles.avatar}
-                      src={getAvatarUrl(user)}
-                      alt={`${user.nombre} ${user.apellido}`}
-                      onClick={() =>
-                      setAvatarPreview({
-                      url: getAvatarUrl(user),
-                      alt: `${user.nombre} ${user.apellido}`,
-                          })
-                        }
-                      />
-                      <span className={styles.NombreApellido}>{user.nombre} {user.apellido}</span>
-                    </div>
-                  </td>
-                  <td className={`${styles.td} ${styles.centrarTodo}`}>{user.email}</td>
-                  <td className={`${styles.td} ${styles.centrarTodo}`}><IconoG genero={user.genero} /></td>
-                 <td className={`${styles.td} ${styles.centrarTodo}`}>
-  
-    <a className={styles.localidadLink}
-    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${user.localidad}, ${user.provincia}, ${user.pais}`)}`}
-    target="_blank"
-    rel="noopener noreferrer"
-    title={`Ver "${user.localidad}" en Google Maps`}
-      >
-      🌎 {user.localidad}
-      </a>
-      </td>
-                  <td className={`${styles.td} ${styles.centrarTodo}`}>
-                    <span className={`${styles.badge} ${styles[`badge__${user.role.toLowerCase()}`] ?? ''}`}>
-                      {user.role}
-                    </span>
-                  </td>
-                  <td className={styles.td}>
-                    <div className={`${styles.td} ${styles.centrarTodo}`}>
-                      <button className={styles.actionBtn} onClick={() => openView(user)}>Ver</button>
-                      {role !== 'USER' && role !== 'GUEST' && (
-                      <button className={`${styles.actionBtn} ${styles.actionBtnEdit}`} onClick={() =>
-                         openEdit(user)}>Editar</button>
-                        )}
-                      {(role === 'ROOT' || role === 'ADMIN') && (
-                        <button
-                          className={`${styles.actionBtn} ${styles.actionBtnDelete}`}
-                          onClick={() => handleDelete(user)}
-                          title="Eliminar usuario"
-                          aria-label="Eliminar usuario"
-                        >
-                          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
-                            <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6h16Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            <path d="M10 11v6M14 11v6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                          </svg>
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      {!loading && !error && sortedUsers.length > 0 && (
+        <UsersTable
+          users={sortedUsers}
+          role={role}
+          ordenarLista={ordenarLista}
+          ordenarDire={ordenarDire}
+          onSort={handleSort}
+          onView={openView}
+          onEdit={openEdit}
+          onDelete={handleDelete}
+          onLocation={setLocationUser}
+          onAvatarClick={setAvatarPreview}
+        />
       )}
 
       <Modal
@@ -306,280 +165,28 @@ function IconoG({ genero }: { genero: string }) {
           <UserEditForm user={modalUser} currentRol={role} onCancel={closeModal} onSaved={handleUserUpdated} />
         )}
       </Modal>
-        <Modal
-  isOpen={successMessage !== null}
-  onClose={() => setSuccessMessage(null)}
-  title="Éxito"
->
-  <p className={styles.message}>{successMessage}</p>
-  <div className={styles.modalActions}>
-    <Button variant="primary" type="button" onClick={() => setSuccessMessage(null)}>
-      Aceptar
-    </Button>
-  </div>
-</Modal>
-{avatarPreview && (
-  <div className={styles.avatarOverlay} onClick={() => setAvatarPreview(null)}>
-    <img
-      className={styles.avatarPreviewImg}
-      src={avatarPreview.url}
-      alt={avatarPreview.alt}
-      onClick={(e) => e.stopPropagation()}
-    />
-  </div>
-)}
-    </main>
-  )
-}
 
-// ------------------------------------------------------------
-// Vista "Ver": detalle de usuario en modo solo lectura
-// ------------------------------------------------------------
-function UserDetails({ user }: { user: User }) {
-  const fields: [string, string][] = [
-    ['Nombre', `${user.nombre} ${user.apellido}`],
-    ['Email', user.email],
-    //['Género', user.genero],
-    //['Fecha de nacimiento', user.fechaNacimiento?.slice(0, 10)],
-    ['Teléfono', user.telefono],
-    ['Dirección', user.direccion],
-    ['Localidad', user.localidad],
-    ['Provincia', user.provincia],
-    ['País', user.pais],
-    ['Código postal', user.codigoPostal],
-  ]
-
-  return (
-    <dl className={styles.viewGrid}>
-      {fields.map(([label, value]) => (
-        <div className={styles.viewRow} key={label}>
-          <dt className={styles.viewLabel}>{label}</dt>
-          <dd className={styles.viewValue}>{value || '-'}</dd>
-        </div>
-      ))}
-    </dl>
-  )
-}
-
-// ------------------------------------------------------------
-// Vista "Editar": formulario que guarda cambios con updateUser
-// El email no se incluye: el backend no permite modificarlo
-// ------------------------------------------------------------
-function UserEditForm({
-  user,
-  currentRol,
-  onCancel,
-  onSaved,
-}: {
-  user: User
-  currentRol: string | null
-  onCancel: () => void
-  onSaved: (user: User) => void
-}) {
-  const [nombre, setNombre] = useState(user.nombre)
-  const [apellido, setApellido] = useState(user.apellido)
-  const [genero, setGenero] = useState(user.genero)
-  const [edad, setEdad] = useState(String(user.edad))
-  const [fechaNacimiento, setFechaNacimiento] = useState(user.fechaNacimiento?.slice(0, 10) ?? '')
-  const [telefono, setTelefono] = useState(user.telefono)
-  const [direccion, setDireccion] = useState(user.direccion)
-  const [localidad, setLocalidad] = useState(user.localidad)
-  const [provincia, setProvincia] = useState(user.provincia)
-  const [pais, setPais] = useState(user.pais)
-  const [codigoPostal, setCodigoPostal] = useState(user.codigoPostal)
-  const [role, setRole] = useState(user.role)
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setError(null)
-    setLoading(true)
-    try {
-      const updated = await updateUser(user._id, {
-        nombre,
-        apellido,
-        genero,
-        edad: Number(edad),
-        fechaNacimiento,
-        telefono,
-        direccion,
-        localidad,
-        provincia,
-        pais,
-        codigoPostal,
-        role,
-      })
-      onSaved(updated)
-    } catch (error: any) {
-      setError(error.message)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  return (
-    <form className={styles.editForm} onSubmit={handleSubmit}>
-      <div className={styles.formRow}>
-        <div>
-          <label className={styles.label} htmlFor="edit-nombre">Nombre</label>
-          <input
-            className={styles.input}
-            id="edit-nombre"
-            type="text"
-            value={nombre}
-            onChange={(e) => setNombre(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label className={styles.label} htmlFor="edit-apellido">Apellido</label>
-          <input
-            className={styles.input}
-            id="edit-apellido"
-            type="text"
-            value={apellido}
-            onChange={(e) => setApellido(e.target.value)}
-            required
-          />
-        </div>
-      </div>
-
-      <div className={styles.formRow}>
-        <div>
-          <label className={styles.label} htmlFor="edit-genero">Género</label>
-          <input
-            className={styles.input}
-            id="edit-genero"
-            type="text"
-            value={genero}
-            onChange={(e) => setGenero(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label className={styles.label} htmlFor="edit-edad">Edad</label>
-          <input
-            className={styles.input}
-            id="edit-edad"
-            type="number"
-            min={1}
-            max={120}
-            value={edad}
-            onChange={(e) => setEdad(e.target.value)}
-            required
-          />
-        </div>
-      </div>
-
-      <div className={styles.formRow}>
-        <div>
-          <label className={styles.label} htmlFor="edit-fechaNacimiento">Fecha de nacimiento</label>
-          <input
-            className={styles.input}
-            id="edit-fechaNacimiento"
-            type="date"
-            value={fechaNacimiento}
-            onChange={(e) => setFechaNacimiento(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label className={styles.label} htmlFor="edit-telefono">Teléfono</label>
-          <input
-            className={styles.input}
-            id="edit-telefono"
-            type="text"
-            value={telefono}
-            onChange={(e) => setTelefono(e.target.value)}
-            required
-          />
-        </div>
-      </div>
-
-      <label className={styles.label} htmlFor="edit-direccion">Dirección</label>
-      <input
-        className={styles.input}
-        id="edit-direccion"
-        type="text"
-        value={direccion}
-        onChange={(e) => setDireccion(e.target.value)}
-        required
-      />
-
-      <div className={styles.formRow}>
-        <div>
-          <label className={styles.label} htmlFor="edit-localidad">Localidad</label>
-          <input
-            className={styles.input}
-            id="edit-localidad"
-            type="text"
-            value={localidad}
-            onChange={(e) => setLocalidad(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label className={styles.label} htmlFor="edit-provincia">Provincia</label>
-          <input
-            className={styles.input}
-            id="edit-provincia"
-            type="text"
-            value={provincia}
-            onChange={(e) => setProvincia(e.target.value)}
-            required
-          />
-        </div>
-      </div>
-
-      <div className={styles.formRow}>
-        <div>
-          <label className={styles.label} htmlFor="edit-pais">País</label>
-          <input
-            className={styles.input}
-            id="edit-pais"
-            type="text"
-            value={pais}
-            onChange={(e) => setPais(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label className={styles.label} htmlFor="edit-codigoPostal">Código postal</label>
-          <input
-            className={styles.input}
-            id="edit-codigoPostal"
-            type="text"
-            value={codigoPostal}
-            onChange={(e) => setCodigoPostal(e.target.value)}
-            required
-          />
-        </div>
-      </div>
-      {currentRol === "ROOT" && (
-        <>
-        <label className={styles.label} htmlFor="edit-role">Rol</label>
-      <select
-        className={styles.select}
-        id="edit-role"
-        value={role}
-        onChange={(e) => setRole(e.target.value)}
+      <Modal
+        isOpen={successMessage !== null}
+        onClose={() => setSuccessMessage(null)}
+        title="Éxito"
       >
-      
-        {ROLES.map((r) => (
-          <option key={r} value={r}>{r}</option>
-        ))}
-      </select>
-        </>
-      )}
-      {error && <p className={styles.error}>{error}</p>}
-      <div className={styles.modalActions}>
-        <Button variant="secondary" type="button" onClick={onCancel}>Cancelar</Button>
-        <Button variant="primary" type="submit" disabled={loading}>
-          {loading ? 'Guardando...' : 'Guardar cambios'}
-        </Button>
-      </div>
-    </form>
+        {successMessage && (
+          <SuccessMessage message={successMessage} onAccept={() => setSuccessMessage(null)} />
+        )}
+      </Modal>
+
+      <Modal
+        isOpen={locationUser !== null}
+        onClose={() => setLocationUser(null)}
+        title="Ubicación"
+        size="md"
+      >
+        {locationUser && <LocationView user={locationUser} />}
+      </Modal>
+
+      <AvatarPreview preview={avatarPreview} onClose={() => setAvatarPreview(null)} />
+    </main>
   )
 }
 

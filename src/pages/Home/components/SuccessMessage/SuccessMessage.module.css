@@ -1,0 +1,17 @@
+.message {
+  color: #888;
+  font-size: 15px;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.modalActions button {
+  width: auto;
+  padding: 10px 20px;
+  margin-top: 0;
+}

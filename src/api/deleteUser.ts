@@ -1,17 +1,12 @@
-import { API_URL } from '@/config/globals'
+import { authFetch } from '@/api/authFetch'
 
 // ------------------------------------------------------------
 // DELETE /users/:id → elimina un usuario existente
 // Es una ruta protegida: solo ROOT/ADMIN pueden eliminar usuarios
 // ------------------------------------------------------------
 export async function deleteUser(id: string): Promise<void> {
-  const token = localStorage.getItem('token')
-
-  const response = await fetch(`${API_URL}/users/${id}`, {
+  const response = await authFetch(`/users/${id}`, {
     method: 'DELETE',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
   })
 
   const body = await response.json()

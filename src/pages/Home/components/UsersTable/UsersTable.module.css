@@ -1,0 +1,51 @@
+.tableWrapper {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid #222;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #111;
+}
+
+.th {
+  padding: 14px 16px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid #222;
+  background-color: #0f0f0f;
+}
+
+.centrarTodo {
+  text-align: center;
+}
+
+.centrarUsuario {
+  display: grid;
+  grid-template-columns: 46px 1fr;
+  align-items: center;
+  gap: 12px;
+}
+
+.centrarUsuario span:last-child {
+  text-align: center;
+}
+
+.filtroUsuario {
+  cursor: pointer;
+  user-select: none;
+}
+
+.filtroUsuario:hover {
+  color: #ccc;
+}
+
+.sortArrow {
+  font-weight: 700;
+}

@@ -11,7 +11,7 @@
 
 .modal {
   width: 100%;
-  max-width: 560px;
+  max-width: 860px;
   max-height: calc(100vh - 40px);
   overflow-y: auto;
   background-color: #111;

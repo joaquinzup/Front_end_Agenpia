@@ -1,0 +1,17 @@
+.iconoM {
+  font-size: 20px;
+  font-weight: 700;
+  color: blue;
+}
+
+.iconoF {
+  font-size: 20px;
+  font-weight: 700;
+  color: pink;
+}
+
+.sinGenero {
+  color: #888;
+  font-size: 13px;
+  font-style: italic;
+}

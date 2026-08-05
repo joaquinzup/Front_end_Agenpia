@@ -58,7 +58,8 @@ reactjs-main/
     │
     ├── api/                    # Funciones fetch hacia el backend
     │   ├── Types.ts              # Interfaz User
-    │   ├── login.ts               # POST /auth/login
+    │   ├── login.ts               # POST /auth/login (ruta pública)
+    │   ├── authFetch.ts            # fetch autenticado compartido por las rutas protegidas
     │   ├── getUsers.ts             # GET /users
     │   ├── createUser.ts            # POST /users
     │   ├── updateUsers.ts             # PUT /users/:id
@@ -77,7 +78,7 @@ reactjs-main/
     │   ├── ui/
     │   │   └── Button/            # Botón reutilizable (variant primary/secondary)
     │   └── blocks/
-    │       ├── Modal/               # Modal genérico (overlay + cierre con Escape)
+    │       ├── Modal/               # Modal genérico (overlay + cierre con Escape, soporta tamaño md/lg)
     │       ├── Navigation/            # Nav simple con links (no está montado en el router)
     │       ├── LoginRightSide/         # Panel derecho decorativo del login (video + logo)
     │       └── RegisterRightSide/       # Panel derecho decorativo, reservado para un registro futuro
@@ -87,9 +88,26 @@ reactjs-main/
     │   └── Videos/               # Videos de fondo (login, alta de usuario)
     │
     └── pages/
-        ├── Home/                # Listado de usuarios (tabla principal de la app)
+        ├── Home/                          # Listado de usuarios (pantalla principal)
+        │   ├── Home.tsx                     # Orquestador: estado, carga de datos, handlers
+        │   ├── utils/avatar.ts               # getAvatarUrl / hashANumero
+        │   └── components/
+        │       ├── HomeHeader/                # Título, buscador, botón "+ Agregar" y "Cerrar sesión"
+        │       ├── UsersTable/                  # Tabla + encabezados con orden por columna
+        │       ├── UserTableRow/                  # Fila: avatar, género, localidad, badge de rol, acciones
+        │       ├── GenderIcon/                      # Ícono ♂ / ♀ / "Sin especificar"
+        │       ├── AvatarPreview/                     # Overlay con la foto ampliada
+        │       ├── LocationView/                        # Mapa embebido + link "Abrir en Google Maps"
+        │       ├── UserDetails/                           # Vista solo lectura ("Ver")
+        │       ├── UserEditForm/                            # Formulario de edición
+        │       └── SuccessMessage/                            # Confirmación tras editar/eliminar
+        │
         ├── Login/               # Formulario de login
-        └── CreateUser/          # Formulario de alta de usuario
+        │
+        └── CreateUser/                # Alta de usuario
+            ├── CreateUser.tsx           # Layout con video de fondo
+            └── components/
+                └── CreateUserForm/         # Formulario de alta en sí
 ```
 
 ### Rutas disponibles
@@ -101,6 +119,17 @@ reactjs-main/
 | `/create-user` | Crear usuario | Sí — redirige a `/login` si no hay token |
 
 La sesión se guarda en `localStorage` (`token` y `role`), no hay store global todavía: cada página lee `localStorage` directamente.
+
+### Cierre de sesión
+
+- **Manual**: el botón "Cerrar sesión" en `HomeHeader` borra `token` y `role` de `localStorage` y redirige a `/login`.
+- **Por token vencido o inválido**: todas las peticiones a rutas protegidas pasan por `api/authFetch.ts`, que agrega el header `Authorization` automáticamente. Si el backend responde `401` (token faltante, corrupto o expirado):
+  1. Borra `token` y `role` de `localStorage`.
+  2. Muestra un `alert()` avisando que la sesión expiró (el `alert()` frena la ejecución hasta que el usuario toca "Aceptar").
+  3. Al cerrar la alerta, redirige a `/login` con `router.navigate({ to: '/login' })`.
+  4. Corta la ejecución (lanza un error), así ninguna pantalla llega a mostrar datos de una sesión que ya sabe inválida.
+
+  Esto cubre tanto el caso de que el JWT haya expirado (por el `JWT_EXPIRES_IN` del backend) como cualquier otro motivo de rechazo del token.
 
 ---
 
@@ -114,10 +143,13 @@ Esta es la pantalla principal y la que concentra la mayoría de los cambios reci
 |---|---|---|---|---|
 | Botón "+ Agregar" (ir a crear usuario) | ✅ | ✅ | ❌ | ❌ |
 | Botón "Editar" por usuario | ✅ | ✅ | ❌ | ❌ |
-| Cambiar el `rol` al editar (select de roles) | ✅ | ❌ (oculto) | — | — |
-| Botón "Eliminar" (ícono de tacho) | ✅ | ✅ | ❌ | ❌ |
+| Cambiar el `rol` al editar (select de roles) | ✅ | ❌ (oculto)¹ | — | — |
+| Botón "Eliminar" (ícono de tacho SVG) | ✅ | ✅ | ❌ | ❌ |
 | Botón "Ver" (detalle solo lectura) | ✅ | ✅ | ✅ | ✅ |
+| Botón "Cerrar sesión" | ✅ | ✅ | ✅ | ✅ |
 | Usuarios que ve la tabla | Todos | Todos menos ROOT | Solo `USER` y `GUEST` | Solo a sí mismo |
+
+> ¹ Detectado en el código: la condición para mostrar el `<select>` de rol es `currentRol === 'ROOT' && 'ADMIN'`. Como `'ADMIN'` es un string (siempre "truthy"), esa condición en la práctica se comporta igual que `currentRol === 'ROOT'` sola — el `&& 'ADMIN'` no tiene ningún efecto. Si la intención era habilitar el select también para `ADMIN`, faltaría cambiarlo por `currentRol === 'ROOT' || currentRol === 'ADMIN'`.
 
 > Estas reglas de visibilidad las devuelve directamente el backend (`getUsersService`); el frontend solo oculta/muestra botones según el rol guardado en `localStorage`, pero quien controla qué usuarios llegan en la respuesta es la API.
 
@@ -137,9 +169,14 @@ Esta es la pantalla principal y la que concentra la mayoría de los cambios reci
 
 Cada rol tiene su propio color de badge (definido en `Home.module.css`): `ROOT` en rojo, `ADMIN` en violeta, `USER` en amarillo, `GUEST` en gris (y queda reservada una clase `editor` para un futuro rol).
 
-### Localidad → Google Maps
+### Localidad → mapa embebido
 
-La celda de "Localidad" es un link que abre Google Maps con la búsqueda de `localidad, provincia, país` del usuario, en una pestaña nueva.
+La celda de "Localidad" (`🌎 <localidad>`) ahora abre un **modal** (`LocationView`) con:
+- Un `<iframe>` de Google Maps embebido, centrado en `direccion, localidad, provincia, país` del usuario.
+- La dirección completa como texto debajo del mapa.
+- Un botón "Abrir en Google Maps ↗" que sí abre la búsqueda en una pestaña nueva, por si quieren verla directamente en Google Maps.
+
+(Antes era directamente un link que abría una pestaña nueva; ahora se previsualiza el mapa sin salir de la app.)
 
 ### Búsqueda y orden
 
@@ -178,15 +215,21 @@ La celda de "Localidad" es un link que abre Google Maps con la búsqueda de `loc
 
 ## Capa de API (`src/api/`)
 
-Todas las funciones siguen el mismo patrón: hacen `fetch` contra `API_URL`, parsean el JSON de respuesta, y si `body.success` es `false` lanzan un `Error(body.message)` (el mensaje que definió el backend). Las rutas protegidas agregan el header `Authorization: Bearer <token>` leyendo el token de `localStorage`.
+Todas las funciones parsean el JSON de respuesta y, si `body.success` es `false`, lanzan un `Error(body.message)` (el mensaje que definió el backend).
+
+Las rutas protegidas ya no arman el `fetch` a mano cada una: todas pasan por **`authFetch(path, options)`**, que:
+1. Agrega el header `Authorization: Bearer <token>` leyendo el token de `localStorage`.
+2. Si la respuesta es `401`, dispara el flujo de sesión expirada (ver sección "Cierre de sesión" más arriba) y corta la ejecución.
+3. Si no, devuelve la `Response` tal cual para que cada función la parsee a su manera.
 
 | Archivo | Endpoint | Notas |
 |---|---|---|
-| `login.ts` | `POST /auth/login` | Devuelve `{ token, role }` |
-| `getUsers.ts` | `GET /users` | Requiere token |
-| `createUser.ts` | `POST /users` | Requiere token; completa campos faltantes con defaults |
-| `updateUsers.ts` | `PUT /users/:id` | Requiere token; el backend devuelve `id` y acá se remapea a `_id` para que coincida con el tipo `User` |
-| `deleteUser.ts` | `DELETE /users/:id` | Requiere token |
+| `login.ts` | `POST /auth/login` | Ruta pública, usa `fetch` directo (no pasa por `authFetch`) |
+| `authFetch.ts` | — | Wrapper compartido por el resto de las funciones de abajo |
+| `getUsers.ts` | `GET /users` | Vía `authFetch` |
+| `createUser.ts` | `POST /users` | Vía `authFetch`; completa campos faltantes con defaults |
+| `updateUsers.ts` | `PUT /users/:id` | Vía `authFetch`; el backend devuelve `id` y acá se remapea a `_id` para que coincida con el tipo `User` |
+| `deleteUser.ts` | `DELETE /users/:id` | Vía `authFetch` |
 
 ---
 
@@ -195,6 +238,10 @@ Todas las funciones siguen el mismo patrón: hacen `fetch` contra `API_URL`, par
 - `components/blocks/Navigation` existe pero no está importado en ningún lado del router: no se ve en la app actualmente.
 - `components/blocks/RegisterRightSide` está preparado para una futura página de registro público, pero no hay ninguna ruta `/register` definida en `router.tsx`.
 - `config/globals.ts` tiene hardcodeado `http://localhost:7575` como `API_URL`; conviene revisar que coincida con el `PORT` real del backend antes de levantar el proyecto (o migrarlo a una variable de entorno de Vite).
-- Los videos de fondo (`src/assets/Videos/...`) se referencian con rutas relativas tipo `src="src/assets/Videos/HR.mp4"` en vez de usar `import`; funciona en desarrollo con Vite sirviendo el `src/` directamente, pero puede no resolver igual en un build de producción — vale la pena revisarlo antes de deployar.
+- En `UserEditForm`, la condición `currentRol === 'ROOT' && 'ADMIN'` no restringe nada extra por el motivo explicado más arriba — vale la pena revisar si la intención era `||` en vez de `&&`.
 
-## Autor: Zupel Joaquin
+### ✅ Resuelto recientemente
+
+- `LoginRightSide` ya no referencia el video y el logo con rutas relativas tipo `src="src/assets/Videos/HR.mp4"`; ahora los importa como módulos (`import videoLogin from '@/assets/Videos/HR.mp4'`), que es lo correcto para que Vite los procese bien también en el build de producción.
+- `Home.tsx` y `CreateUser.tsx` se separaron en varios componentes más chicos (ver árbol de carpetas arriba), lo que deja cada archivo enfocado en una sola responsabilidad.
+- Se agregó el botón "Cerrar sesión" y el manejo automático de sesión expirada (ver sección "Cierre de sesión").

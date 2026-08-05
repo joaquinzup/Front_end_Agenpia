@@ -5,10 +5,11 @@ interface ModalProps {
   isOpen: boolean
   onClose: () => void
   title?: string
+  size?: 'md' | 'lg'
   children: React.ReactNode
 }
 
-function Modal({ isOpen, onClose, title, children }: ModalProps) {
+function Modal({ isOpen, onClose, title, size = 'md', children }: ModalProps) {
   // Cerrar con Escape mientras el modal está abierto
   useEffect(() => {
     if (!isOpen) return
@@ -25,7 +26,7 @@ function Modal({ isOpen, onClose, title, children }: ModalProps) {
 
   return (
     <div className={styles.overlay} onClick={onClose}>
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+      <div className={`${styles.modal} ${size === 'lg' ? styles.modalLg : ''}`} onClick={(e) => e.stopPropagation()}>
         <div className={styles.header}>
           {title && <h2 className={styles.title}>{title}</h2>}
           <button className={styles.closeBtn} onClick={onClose} aria-label="Cerrar" type="button">

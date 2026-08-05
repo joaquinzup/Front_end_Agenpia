@@ -1,0 +1,140 @@
+.tr:not(:last-child) {
+  border-bottom: 1px solid #1a1a1a;
+}
+
+.tr:hover {
+  background-color: #161616;
+}
+
+.td {
+  padding: 14px 16px;
+  font-size: 14px;
+  color: #ccc;
+  white-space: nowrap;
+}
+
+.centrarTodo {
+  text-align: center;
+}
+
+/* ============================================================
+                                USER CELL
+============================================================ */
+.userCell {
+  display: grid;
+  grid-template-columns: 46px 1fr;
+  align-items: center;
+  gap: 12px;
+}
+
+.nombreApellido {
+  text-align: center;
+}
+
+.avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background-color: #1a1a1a;
+  border: 1px solid #333;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.avatar:hover {
+  transform: scale(1.08);
+}
+
+.localidadLink {
+  color: #aab0ff;
+  text-decoration: none;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
+.localidadLink:hover {
+  text-decoration: underline;
+}
+
+/* ============================================================
+                                BADGE
+============================================================ */
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge__admin {
+  background-color: rgba(155, 93, 229, 0.15);
+  color: #b07ef8;
+}
+
+.badge__editor {
+  background-color: rgba(0, 200, 150, 0.12);
+  color: #00c896;
+}
+
+.badge__root {
+  background-color: rgba(89, 13, 13, 0.15);
+  color: #da4244;
+}
+
+.badge__user {
+  background-color: rgba(125, 113, 5, 0.06);
+  color: #e6d648;
+}
+
+.badge__guest {
+  background-color: rgba(74, 76, 76, 0.15);
+  color: #b2b1b5;
+}
+
+/* ============================================================
+                                ACTION BUTTONS
+============================================================ */
+.actionBtn {
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid #333;
+  background-color: transparent;
+  color: #ccc;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.actionBtn:hover {
+  border-color: #666;
+  color: #fff;
+}
+
+.actionBtnEdit {
+  border-color: rgba(155, 93, 229, 0.4);
+  color: #b07ef8;
+}
+
+.actionBtnEdit:hover {
+  border-color: #9b5de5;
+  color: #c49dfa;
+}
+
+.actionBtnDelete {
+  color: #ff6b6b;
+  border-color: #ff6b6b;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.actionBtnDelete:hover {
+  background-color: #ff6b6b;
+  color: #fff;
+}

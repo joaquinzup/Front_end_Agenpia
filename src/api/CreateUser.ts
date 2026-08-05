@@ -1,4 +1,4 @@
-import { API_URL } from '@/config/globals'
+import { authFetch } from '@/api/authFetch'
 
 // ------------------------------------------------------------
 // POST /users → crea un usuario nuevo
@@ -12,14 +12,9 @@ export async function createUser(
     genero: string,
     telefono: string,
     localidad: string) {
-  const token = localStorage.getItem('token')
-
-  const response = await fetch(`${API_URL}/users`, {
+  const response = await authFetch('/users', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       nombre,
       apellido,
