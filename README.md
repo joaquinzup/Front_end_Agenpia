@@ -271,15 +271,4 @@ Las rutas protegidas ya no arman el `fetch` a mano cada una: todas pasan por **`
 
 ---
 
-## Notas y elementos pendientes/detectados en el código
-
-- `components/blocks/Navigation` existe pero no está importado en ningún lado del router: no se ve en la app actualmente.
-- `components/blocks/RegisterRightSide` está preparado para una futura página de registro público, pero no hay ninguna ruta `/register` definida en `router.tsx`.
-- `config/globals.ts` tiene hardcodeado `http://localhost:7575` como `API_URL`; conviene revisar que coincida con el `PORT` real del backend antes de levantar el proyecto (o migrarlo a una variable de entorno de Vite).
-- En `UserEditForm`, la condición `currentRol === 'ROOT' && 'ADMIN'` no restringe nada extra por el motivo explicado más arriba — vale la pena revisar si la intención era `||` en vez de `&&`.
-
-### ✅ Resuelto recientemente
-
-- `LoginRightSide` ya no referencia el video y el logo con rutas relativas tipo `src="src/assets/Videos/HR.mp4"`; ahora los importa como módulos (`import videoLogin from '@/assets/Videos/HR.mp4'`), que es lo correcto para que Vite los procese bien también en el build de producción.
-- `Home.tsx` y `CreateUser.tsx` se separaron en varios componentes más chicos (ver árbol de carpetas arriba), lo que deja cada archivo enfocado en una sola responsabilidad.
-- Se agregó el botón "Cerrar sesión" y el manejo automático de sesión expirada (ver sección "Cierre de sesión").
+## Autor: Joaquin Zupel
