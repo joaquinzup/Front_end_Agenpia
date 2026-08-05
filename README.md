@@ -52,7 +52,6 @@ reactjs-main/
 ├── vite.config.ts
 ├── tsconfig.json
 ├── package.json
-├── email.ts                    # Suelto en la raíz, sin usar (ver nota más abajo)
 └── src/
     ├── main.tsx                 # Punto de entrada: monta <App /> en el DOM
     ├── App.tsx                  # Componente raíz: contiene el RouterProvider
@@ -152,8 +151,6 @@ reactjs-main/
                     ├── CreateUserForm.tsx     # Formulario de alta en sí
                     └── CreateUserForm.module.css
 ```
-
-> Nota: hay un archivo `email.ts` suelto en la raíz del repo (fuera de `src/`) con un boceto de envío de email de bienvenida vía Resend. No está importado desde ningún lado de la app ni la dependencia `resend` está en `package.json` — parece un experimento que quedó sin conectar, no una funcionalidad activa.
 
 ### Rutas disponibles
 
