@@ -197,7 +197,7 @@ function UserEditForm({ user, currentRol, onCancel, onSaved }: UserEditFormProps
         </div>
       </div>
 
-      {currentRol === 'ROOT' || currentRol === 'ADMIN' && (
+      {currentRol === 'ROOT' &&(
         <>
           <label className={styles.label} htmlFor="edit-role">Rol</label>
           <select

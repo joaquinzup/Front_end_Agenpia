@@ -3,6 +3,7 @@ import GenderIcon from '@/pages/Home/components/GenderIcon/GenderIcon'
 import { getAvatarUrl } from '@/pages/Home/utils/avatar'
 import styles from './UserTableRow.module.css'
 
+
 interface UserTableRowProps {
   user: User
   role: string | null
@@ -13,7 +14,19 @@ interface UserTableRowProps {
   onAvatarClick: (preview: { url: string; alt: string }) => void
 }
 
+function getCurrentUserId(): string | null {
+  const token = localStorage.getItem('token')
+  if (!token) return null
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    return payload?.userId ?? null
+  } catch {
+    return null
+  }
+}
+
 function UserTableRow({ user, role, onView, onEdit, onDelete, onLocation, onAvatarClick }: UserTableRowProps) {
+  const esUnoMismo = user._id === getCurrentUserId()
   return (
     <tr className={styles.tr}>
       <td className={styles.td}>
@@ -58,7 +71,7 @@ function UserTableRow({ user, role, onView, onEdit, onDelete, onLocation, onAvat
               Editar
             </button>
           )}
-          {(role === 'ROOT' || role === 'ADMIN') && (
+          {(role === 'ROOT' || role === 'ADMIN') && !esUnoMismo && (
             <button
               className={`${styles.actionBtn} ${styles.actionBtnDelete}`}
               onClick={() => onDelete(user)}
